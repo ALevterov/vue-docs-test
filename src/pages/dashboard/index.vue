@@ -1,16 +1,5 @@
 <script setup lang="ts">
-
-import {useDocumentStore} from "@/entities/documents/model/store/document.store.ts";
-import {onMounted} from "vue";
 import FileBoard from "@/widgets/fileBoard/ui/fileBoard.vue";
-
-const documents = useDocumentStore()
-
-onMounted(async () => {
-  await documents.load()
-  console.log(documents.items)
-})
-
 
 </script>
 

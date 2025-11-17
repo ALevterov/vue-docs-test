@@ -3,8 +3,6 @@ import {api} from "@/entities/documents/api";
 import {useToast} from "vue-toastification";
 import type {DocumentState} from "@/entities/documents/model/types/document.types.ts";
 
-const toast = useToast();
-
 export const useDocumentStore = defineStore('documents', {
   state: (): DocumentState => ({
     items: [],
@@ -21,7 +19,28 @@ export const useDocumentStore = defineStore('documents', {
         const res = await api.get('/user/docs');
         this.items = res.data;
       } catch (e) {
-        useToast().error("Ошибка загрузки документов")
+        this.error = e as string;
+        useToast().error(e)
+      }
+    },
+    async searchDocuments(search: string) {
+      if (!search) {
+        this.items = []
+        return
+      }
+
+      this.loading = true
+      try {
+        const { data } = await api.get(`/user/docs`, {
+          params: { search },
+        })
+        this.items = data
+      } catch(e) {
+        this.error = e as string;
+        useToast().error(e)
+      }
+      finally {
+        this.loading = false
       }
     },
     selectOne(id: number) {

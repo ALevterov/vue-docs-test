@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed} from 'vue'
-import {useInput} from "@/shared/lib/hooks";
+import {computed, watch} from 'vue'
+import {debounce, useInput} from "@/shared/lib/hooks";
 import {useDocumentStore} from "@/entities/documents/model/store/document.store.ts";
 import DocumentCard from "@/entities/documents/ui/documentCard/documentCard.vue";
 import DocumentExpanded from "@/entities/documents/ui/documentExpanded/documentExpanded.vue";
@@ -10,9 +10,12 @@ const {value: search, onInput} = useInput('')
 
 const store = useDocumentStore()
 
-const filteredItems = computed(() => {
-  if (!search.value) return []
-  return store.items.filter(item => item.name.toLowerCase().includes(search.value.toLowerCase()))
+const debouncedSearch = debounce((value) => {
+  store.searchDocuments(value)
+}, 400)
+
+watch(search, (value) => {
+  debouncedSearch(value)
 })
 
 const selectedDoc = computed(() => store.items.find(item => item.selected))
@@ -49,8 +52,8 @@ const onDocumentDownload = (doc: DocumentType) => {
           <input :value="search" @input="onInput" class="board__sidebar_search" type="text" >
           <div class="board__sidebar_result title">Результаты</div>
           <div class="board__sidebar_result_docs">
-            <document-card v-for="item in filteredItems" :key="item.id" :doc="item" @clicked="onDocumentClicked" />
-            {{!filteredItems.length ? "Ничего не найдено" : null}}
+            <document-card v-for="item in store.items" :key="item.id" :doc="item" @clicked="onDocumentClicked" />
+            {{!store.items.length ? "Ничего не найдено" : null}}
           </div>
       </div>
       <div class="board__view_field">
